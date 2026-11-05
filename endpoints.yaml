@@ -1,0 +1,1032 @@
+version: 1
+updated: '2026-11-05'
+scope: HTTP routes used by the Xbox app on Windows for Xbox Live, Game Pass, store catalog, cloud gaming, social and auth.
+endpoints:
+- id: oauth-authorize
+  area: auth
+  method: GET
+  host: login.live.com
+  path: /oauth20_authorize.srf
+  auth: oauth
+  class: auth
+  status: 302
+  doc: docs/auth.md
+  summary: Interactive Microsoft account sign-in.
+  query:
+  - client_id
+  - response_type
+  - redirect_uri
+  - response_mode
+  - scope
+  - prompt
+  notes: Returns a 302 to oauth20_desktop.srf with a code or an error. The Xbox scope is service::user.auth.xboxlive.com::MBI_SSL.
+- id: oauth-device-code
+  area: auth
+  method: POST
+  host: login.live.com
+  path: /oauth20_connect.srf
+  auth: oauth
+  class: auth
+  status: 200
+  doc: docs/auth.md
+  summary: Starts the device-code flow.
+  notes: Form fields are client_id, scope and response_type=device_code. The response carries user_code, device_code, verification_uri
+    and interval.
+- id: oauth-token
+  area: auth
+  method: POST
+  host: login.live.com
+  path: /oauth20_token.srf
+  auth: oauth
+  class: auth
+  status: 200
+  doc: docs/auth.md
+  summary: Exchanges an authorization code, refresh token or device code.
+  notes: The grant_type decides which fields are required. The app uses authorization_code and refresh_token - device_code
+    is used by the polling variant.
+- id: wam-rst2
+  area: auth
+  method: POST
+  host: login.live.com
+  path: /RST2.srf
+  auth: wam
+  class: auth
+  status: 200
+  doc: docs/auth.md
+  summary: WS-Trust request issued by Windows Web Account Manager.
+  notes: Captured six times during sign-in. The body is a WS-Trust envelope and includes the returned token material, so it
+    is not reproduced. The app itself does not build this request - Windows does.
+- id: device-authenticate
+  area: auth
+  method: POST
+  host: device.auth.xboxlive.com
+  path: /device/authenticate
+  auth: proof-of-possession
+  class: auth
+  status: 400
+  doc: docs/auth.md
+  summary: Creates the device token used by SISU or XSTS.
+  notes: 'Body: Properties with AuthMethod=ProofOfPossession, DeviceType=Win32, random Id and SerialNumber, Version=0.0.0,
+    ProofKey - RelyingParty=http://auth.xboxlive.com - TokenType=JWT. The Signature header is a PoP signature, not the fixed
+    update signature.'
+- id: sisu-authorize
+  area: auth
+  method: POST
+  host: sisu.xboxlive.com
+  path: /authorize
+  auth: proof-of-possession
+  class: auth
+  status: 401
+  doc: docs/auth.md
+  summary: Exchanges a Microsoft access token for the XBL3.0 header.
+  notes: 'Body: AccessToken prefixed with t=, AppId, DeviceToken, Sandbox=RETAIL, UseModernGamertag=true, SiteName=user.auth.xboxlive.com,
+    RelyingParty, ProofKey. Returns AuthorizationToken.Token and DisplayClaims.Xui[0].uhs.'
+- id: xsts-authorize
+  area: auth
+  method: POST
+  host: xsts.auth.xboxlive.com
+  path: /xsts/authorize
+  auth: none
+  class: auth
+  status: 400
+  doc: docs/auth.md
+  summary: Classic device-token to XSTS-token exchange.
+  notes: Not used by the current app, which goes through SISU. The route is still live - a tokenless POST returns 400 because
+    the body is missing.
+- id: profile-me
+  area: profile
+  method: GET
+  host: profile.xboxlive.com
+  path: /users/me/profile/settings
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Profile settings for the signed-in account.
+  query:
+  - settings
+  notes: The app asks for Gamertag, ModernGamertag, Gamerscore, GameDisplayPicRaw, AccountTier, Bio, Location and XboxOneRep.
+    profileUsers[0] is the caller - an empty list means the lookup failed.
+- id: profile-xuid
+  area: profile
+  method: GET
+  host: profile.xboxlive.com
+  path: /users/xuid({xuid})/profile/settings
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Profile settings for another account.
+  query:
+  - settings
+  notes: Same response shape as profile-me. Useful when you already have the xuid and do not want a gamertag lookup.
+- id: profile-gamertag
+  area: profile
+  method: GET
+  host: profile.xboxlive.com
+  path: /users/gt({gamertag})/profile/settings
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Resolves a gamertag to an xuid.
+  query:
+  - settings
+  notes: The gamertag is percent-encoded - letters, digits, hyphen, underscore and dot survive. Asking only for Gamertag is
+    enough for the xuid.
+- id: people-friends
+  area: profile
+  method: GET
+  host: peoplehub.xboxlive.com
+  path: /users/me/people/friends/decoration/detail,preferredColor,presenceDetail,multiplayerSummary
+  auth: xbl3.0
+  contract: '7'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Friends of the signed-in account, with presence and profile decoration.
+  notes: Returns people[]. Each entry has gamertag, xuid, presenceState, presenceDetails and an optional detail block. The
+    contract version is 7, not 2.
+- id: people-friends-xuid
+  area: profile
+  method: GET
+  host: peoplehub.xboxlive.com
+  path: /users/xuid({xuid})/people/friends/decoration/bio,detail,multiplayerSummary,preferredColor,presenceDetail
+  auth: xbl3.0
+  contract: '7'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Friends of another account.
+  notes: Same people[] envelope. The decoration list changes which detail fields are populated.
+- id: people-xuids
+  area: profile
+  method: GET
+  host: peoplehub.xboxlive.com
+  path: /users/me/people/xuids({xuids})/decoration/detail,preferredColor,presenceDetail
+  auth: xbl3.0
+  contract: '7'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Profile cards for a comma-separated xuid list.
+  notes: The xuids() segment accepts more than one id. This is the cheapest way to refresh a visible friend list.
+- id: people-batch
+  area: profile
+  method: POST
+  host: peoplehub.xboxlive.com
+  path: /users/me/people/batch/decoration/detail,preferredColor
+  auth: xbl3.0
+  contract: '7'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Batch profile cards by xuid.
+  notes: 'Body: {"xuids":["{xuid}"]}. The response is the same people[] shape as the GET routes. The app uses this
+    for cards that are not already in the friend list.'
+- id: people-accountlink
+  area: profile
+  method: GET
+  host: peoplehub.xboxlive.com
+  path: /users/me/accountlink
+  auth: xbl3.0
+  contract: '1'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Linked external accounts for the signed-in user.
+  notes: Returns accountLinkDetails plus the usual people envelope fields. The app calls it on startup and after an account
+    switch.
+- id: people-recent
+  area: profile
+  method: GET
+  host: peoplehub.xboxlive.com
+  path: /users/me/people/recentplayers
+  auth: xbl3.0
+  contract: '7'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Players recently seen in multiplayer.
+  notes: Same people[] envelope. Empty is normal for an account with no recent multiplayer sessions.
+- id: people-played-title
+  area: profile
+  method: GET
+  host: peoplehub.xboxlive.com
+  path: /users/me/people/playedTitle({title_id})/decoration/presenceDetail,titleHistory
+  auth: xbl3.0
+  contract: '7'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/profile.md
+  summary: People who played a title, with presence and history.
+  notes: Used on the game page to show friends who played the same title. The title id is the modern decimal id, not the product
+    id.
+- id: privacy-settings
+  area: profile
+  method: GET
+  host: privacy.xboxlive.com
+  path: /users/me/privacy/settings
+  auth: xbl3.0
+  contract: '3'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Privacy settings for the signed-in account.
+  notes: Returns settings[] with setting and value pairs such as ShareFriendList, SharePresence and AllowProfileViewing.
+- id: accounts-gamertags
+  area: profile
+  method: GET
+  host: accounts.xboxlive.com
+  path: /users/current/profile/gamertags/generate
+  auth: xbl3.0
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/profile.md
+  summary: Generates available gamertag suggestions.
+  notes: The route is live but the query and response are not documented here. A tokenless GET returns 401.
+- id: social-people
+  area: social
+  method: GET
+  host: social.xboxlive.com
+  path: /users/me/people
+  auth: xbl3.0
+  class: read
+  status: 403
+  probe_status: 403
+  doc: docs/social.md
+  summary: Legacy people list.
+  notes: Returns 403 without a token. The current app uses peoplehub instead - this route is kept because older clients and
+    guides still reference it.
+- id: social-followers
+  area: social
+  method: GET
+  host: social.xboxlive.com
+  path: /users/xuid({xuid})/people/followers
+  auth: xbl3.0
+  class: read
+  status: 403
+  probe_status: 403
+  doc: docs/social.md
+  summary: Followers of an account.
+  notes: Returns 403 without a token. The relationship data is also available through peoplehub decoration, so most new code
+    should use peoplehub.
+- id: social-friends
+  area: social
+  method: GET
+  host: social.xboxlive.com
+  path: /users/xuid({xuid})/people/friends
+  auth: xbl3.0
+  class: read
+  status: 403
+  probe_status: 403
+  doc: docs/social.md
+  summary: Friends of an account.
+  notes: Returns 403 without a token. Kept for the same reason as the followers route.
+- id: clubhub-official
+  area: social
+  method: GET
+  host: clubhub-public.xboxlive.com
+  path: /clubs/officialclub({club_id})
+  auth: xbl3.0
+  contract: '7'
+  class: read
+  status: 200/404
+  probe_status: 400
+  doc: docs/social.md
+  summary: Official club for a title.
+  notes: The app resolves a title id to its official club. 404 with code 1028 means the title has no official club. A tokenless
+    request returns 400 because the contract or identity is missing.
+- id: title-history
+  area: titles
+  method: GET
+  host: titlehub.xboxlive.com
+  path: /users/xuid({xuid})/titles/titleHistory/decoration/Achievement
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Played titles for an account.
+  query:
+  - maxItems
+  notes: The app sends maxItems=10000 and a 100 second timeout. The response is titles[] with titleId, name, type, achievement
+    summary and titleHistory.
+- id: title-user
+  area: titles
+  method: GET
+  host: titlehub.xboxlive.com
+  path: /users/xuid({xuid})/titles/titleid({title_id})/decoration/achievement,image,detail,titleHistory
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 200/404
+  probe_status: 401
+  doc: docs/titles.md
+  summary: One played title with art and history.
+  notes: 404 is absence, not a transport error. The app treats it as None when a title id is not in the account's history.
+- id: title-detail
+  area: titles
+  method: GET
+  host: titlehub.xboxlive.com
+  path: /titles/titleid({title_id})/decoration/detail
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Catalog detail for a title id.
+  notes: Used when a batch lookup cannot be used. Missing ids are reported by the caller instead of failing the whole lookup.
+- id: title-batch
+  area: titles
+  method: POST
+  host: titlehub.xboxlive.com
+  path: /titles/batch/decoration/detail
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Detail for several title ids in one request.
+  notes: 'Body: {"titleIds":["704208617"],"pfns":null}. The app falls back to one GET per id if the batch response is unusable.'
+- id: title-search
+  area: titles
+  method: GET
+  host: titlehub.xboxlive.com
+  path: /titles/search
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Search titles by name.
+  query:
+  - query
+  notes: A tokenless GET returns 401. The app's search page mostly uses the Game Pass search service, so this route is a fallback
+    rather than the primary path.
+- id: title-user-card
+  area: titles
+  method: GET
+  host: titlehub.xboxlive.com
+  path: /users/xuid({xuid})/titles/titleId({title_id})/decoration/detail,image,scid,productId
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Title card with scid, product id and images.
+  notes: This is the workhorse of the app's library and store pages. The response carries serviceConfigId, productId, productIds
+    and images[].
+- id: title-pfn-user
+  area: titles
+  method: GET
+  host: titlehub.xboxlive.com
+  path: /users/xuid({xuid})/titles/pfn({pfn})/decoration/achievement,detail,image,scid,productId
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Title card addressed by package family name.
+  notes: The app uses this for its own package (Microsoft.GamingApp_8wekyb3d8bbwe) and for installed games. pfn() is the package
+    family name, not the product id.
+- id: title-pfn-scid
+  area: titles
+  method: GET
+  host: titlehub.xboxlive.com
+  path: /titles/pfn({pfn})/decoration/Scid
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Service config id for a package family name.
+  notes: Returns the title record for the package. The app uses it when it has a package but not a title id.
+- id: title-batch-user
+  area: titles
+  method: POST
+  host: titlehub.xboxlive.com
+  path: /users/xuid({xuid})/titles/batch/decoration/GamePass,Achievement,Stats
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Batch title cards with Game Pass, achievement and stat decoration.
+  notes: 'Body: {"pfns":null,"titleIds":["704208617"]}. The response adds achievementSummary at the root and achievement/stats/gamePass
+    per title.'
+- id: eplists-pins
+  area: titles
+  method: GET
+  host: eplists.xboxlive.com
+  path: /users/xuid({xuid})/lists/pins/{product_id}
+  auth: xbl3.0
+  contract: '3'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Pin list for one product.
+  notes: Returns ListItems, ListMetadata and ImpressionId. Empty ListItems is normal for an unpinned product. MaxListSize
+    is 200.
+- id: titlestorage-lock
+  area: titles
+  method: GET
+  host: titlestorage.xboxlive.com
+  path: /connectedstorage/users/xuid({xuid})/scids/{scid}/lock
+  auth: xbl3.0
+  class: read
+  status: 404
+  probe_status: 401
+  doc: docs/titles.md
+  summary: Checks whether a cloud-save container is locked.
+  notes: A 404 with code 2038 means the container has no lock. This is a presence probe, not an error path the app shows to
+    the user.
+- id: dbox-search
+  area: titles
+  method: GET
+  host: dbox.tools
+  path: /api/title_ids/
+  auth: none
+  class: read
+  status: 200
+  doc: docs/titles.md
+  summary: Title-id search used by one client, not by the Xbox app.
+  query:
+  - name
+  - limit
+  - offset
+  notes: No Xbox token. Returns rows with name, title id and product metadata. This is a third-party index - treat its ids
+    as leads and confirm them against titlehub.
+- id: gamepass-sigls
+  area: titles
+  method: GET
+  host: catalog.gamepass.com
+  path: /sigls/v2
+  auth: none
+  class: read
+  status: 200
+  probe_status: 200
+  doc: docs/store.md
+  summary: Product ids in a Game Pass catalog group.
+  query:
+  - id
+  - market
+  - language
+  notes: Returns a JSON array of product ids for a SIGL. No token - market and language are required in practice.
+- id: gamepass-pfns
+  area: titles
+  method: GET
+  host: catalog.gamepass.com
+  path: /misc/pc-pfns-list
+  auth: none
+  class: read
+  status: 200/304
+  probe_status: 200
+  doc: docs/store.md
+  summary: Package family names for the PC Game Pass catalog.
+  notes: The app caches this list with an ETag - 304 is expected on a warm start. The body is a JSON array of package family
+    names.
+- id: displaycatalog-product
+  area: titles
+  method: GET
+  host: displaycatalog.mp.microsoft.com
+  path: /v7.0/products/{product_id}
+  auth: none
+  class: read
+  status: 200
+  probe_status: 200
+  doc: docs/store.md
+  summary: Store product details without an Xbox token.
+  query:
+  - market
+  - languages
+  notes: Returns product metadata, images, availabilities and SKUs. This is the simplest way to get box art and release data
+    without an account.
+- id: storeedge-product
+  area: titles
+  method: GET
+  host: storeedgefd.dsx.mp.microsoft.com
+  path: /v9.0/products/{product_id}
+  auth: none
+  class: read
+  status: 200
+  probe_status: 200
+  doc: docs/store.md
+  summary: Store product details from the Store edge service.
+  query:
+  - market
+  - locale
+  - deviceFamily
+  notes: Same product id as displaycatalog but a different response shape. Used by the Store page when it needs availability
+    data.
+- id: beige-offline
+  area: titles
+  method: GET
+  host: beige.xboxservices.com
+  path: /pcgafd/config/offlinepc
+  auth: xbl3.0
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/store.md
+  summary: Offline-permission configuration for the PC app.
+  notes: Returns offlinePermissions with maxTogglesPerPeriod and the next time the setting can change. A tokenless request
+    returns 401.
+- id: xnotify-status
+  area: titles
+  method: GET
+  host: xnotify.xboxlive.com
+  path: /servicestatusv6/{market}/{locale}
+  auth: none
+  class: read
+  status: 200
+  probe_status: 200
+  doc: docs/store.md
+  summary: Xbox service status for a market and locale.
+  notes: The captured request had a double slash before the market (servicestatusv6//AT/en-US). The response has Status, CoreServices
+    and Titles arrays.
+- id: achievements-list
+  area: achievements
+  method: GET
+  host: achievements.xboxlive.com
+  path: /users/xuid({xuid})/achievements
+  auth: xbl3.0
+  contract: 2 or 4
+  class: read
+  status: 400
+  probe_status: 400
+  doc: docs/achievements.md
+  summary: Achievement list for one title and one account.
+  query:
+  - titleId
+  - maxItems
+  - continuationToken
+  notes: Contract 2 returns pages with continuationToken and achievement progress. Contract 4 returns the requirement ids
+    used to tell event-based titles from progress-based titles. A tokenless GET returns 400 - the app sends maxItems=1000.
+- id: progress-update
+  area: achievements
+  method: POST
+  host: achievements.xboxlive.com
+  path: /users/xuid({xuid})/achievements/{scid}/update
+  auth: xbl3.0
+  contract: '2'
+  class: write
+  status: 200/204/304
+  doc: docs/achievements.md
+  summary: Writes achievement progress for a title.
+  notes: 'Body: action=progressUpdate, serviceConfigId, titleId as a string, userId, achievements[] with id and percentComplete
+    as a string. The client also sends a fixed Signature header. A locked-achievement test with that value returned 200 and
+    unlocked a different achievement, so the header is not request-bound - it is a static credential. The value is not published,
+    and there is no copy-ready bundle.'
+  test_account: true
+- id: stats-hero
+  area: stats
+  method: POST
+  host: userstats.xboxlive.com
+  path: /batch
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/stats.md
+  summary: Hero stats for one account and title.
+  notes: 'Body: arrangebyfield=xuid, xuids[], groups[] with name=Hero and titleId. A GET of the scid route does not return
+    these stats. The response is groups[].statlistscollection plus a top-level statlistscollection.'
+- id: stats-scid
+  area: stats
+  method: POST
+  host: userstats.xboxlive.com
+  path: /batch
+  auth: xbl3.0
+  contract: '1'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/stats.md
+  summary: Every stat on a service config id.
+  notes: 'Body: requestedusers[] and requestedscids[] with an empty requestedstats list. Used as a fallback when the Hero
+    request returns no rows.'
+- id: stats-minutes
+  area: stats
+  method: POST
+  host: userstats.xboxlive.com
+  path: /batch
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/stats.md
+  summary: Minutes played for one account and title.
+  notes: 'Body: arrangebyfield=xuid, xuids[], stats[] with name=MinutesPlayed and titleId. The captured response had an empty
+    statlistscollection for a title with no recorded time.'
+- id: stat-write
+  area: stats
+  method: PATCH
+  host: statswrite.xboxlive.com
+  path: /stats/users/{xuid}/scids/{scid}
+  auth: xbl3.0
+  contract: '4'
+  class: write
+  status: 200/204
+  doc: docs/stats.md
+  summary: Replaces one stat value.
+  notes: Body uses the 2017-1 schema with previousRevision, revision, timestamp and stats.title.{name}.value. Values are strings
+    even for Integer and Double stats. Retries three times, one second apart - 401 and 403 are not retried.
+  test_account: true
+- id: presence-heartbeat
+  area: presence
+  method: POST
+  host: presence-heartbeat.xboxlive.com
+  path: /users/xuid({xuid})/devices/current/
+  auth: app-token
+  contract: '3'
+  class: write
+  status: 200
+  doc: docs/presence.md
+  summary: Keeps a title marked as active.
+  notes: 'Body: titles[] with expiration=600, id, state=active and sandbox=RETAIL. HTTP/1 only. The app''s token is not the
+    XBL3.0 header - it comes from the Xbox app process.'
+  test_account: true
+- id: presence-title
+  area: presence
+  method: POST
+  host: userpresence.xboxlive.com
+  path: /users/xuid({xuid})/devices/current/titles/current
+  auth: xbl3.0
+  contract: '3'
+  class: write
+  status: 200
+  doc: docs/presence.md
+  summary: Sets the current title for the device.
+  notes: 'Body: {"id":704208617,"State":"Active"}. The response is empty and carries x-heartbeat-after: 300. This is the route
+    the app uses to show the running title in the friend list.'
+  test_account: true
+- id: presence-device
+  area: presence
+  method: POST
+  host: userpresence.xboxlive.com
+  path: /users/xuid({xuid})/devices/current
+  auth: xbl3.0
+  contract: '3'
+  class: write
+  status: 401
+  doc: docs/presence.md
+  summary: Publishes the current device state.
+  notes: Returns 401 without a token. The app uses the titles/current variant for title presence - this route is the device-level
+    form.
+  test_account: true
+- id: messaging-inbox
+  area: messaging
+  method: GET
+  host: xblmessaging.xboxlive.com
+  path: /network/xbox/users/me/inbox
+  auth: xbl3.0
+  contract: '1'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/messaging.md
+  summary: Primary Xbox Live message inbox.
+  notes: Returns primary, folders and safetySettings. primary.conversations[] carries participants, lastMessage and read state.
+    The response can be large - the capture had more than a hundred conversations.
+- id: messaging-inbox-secondary
+  area: messaging
+  method: GET
+  host: xblmessaging.xboxlive.com
+  path: /network/xbox/users/me/inbox/Secondary
+  auth: xbl3.0
+  contract: '1'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/messaging.md
+  summary: Secondary inbox, normally message requests.
+  notes: Same envelope as the primary inbox. The app calls it separately so it can show a message-request count.
+- id: messaging-groups
+  area: messaging
+  method: GET
+  host: xblmessaging.xboxlive.com
+  path: /network/xbox/users/me/groups
+  auth: xbl3.0
+  contract: '1'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/messaging.md
+  summary: Group conversations for the signed-in user.
+  notes: Returns the group conversation list. The app uses it to build the chat tab without loading each conversation.
+- id: messaging-safety
+  area: messaging
+  method: GET
+  host: xblmessaging.xboxlive.com
+  path: /network/xbox/users/xuid({xuid})/safetySettings
+  auth: xbl3.0
+  contract: '2'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/messaging.md
+  summary: Message safety settings for an account.
+  notes: Returns settings with primaryInboxMedia, primaryInboxText, secondaryInboxMedia and canUnobscure. The app reads it
+    before rendering filtered messages.
+- id: inbox-assist
+  area: messaging
+  method: GET
+  host: inbox.assist.gameservices.xboxlive.com
+  path: /messages
+  auth: xbl3.0
+  class: read
+  status: 200
+  probe_status: 400
+  doc: docs/messaging.md
+  summary: Support and service messages shown in the app.
+  notes: Returns Messages[] and Errors[]. The app requests it with an auth header, not the XBL3.0 header. A request with no
+    identity returns 400.
+- id: notification-inbox-xuid
+  area: messaging
+  method: GET
+  host: notificationinbox.xboxlive.com
+  path: /users/xuid({xuid})/inbox
+  auth: xbl3.0
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/messaging.md
+  summary: Xbox notification inbox for an account.
+  notes: Returns 401 without a token. This is the notification service, not the message inbox on xblmessaging.
+- id: notification-inbox-me
+  area: messaging
+  method: GET
+  host: notificationinbox.xboxlive.com
+  path: /users/me/inbox
+  auth: xbl3.0
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/messaging.md
+  summary: Notification inbox for the signed-in account.
+  notes: Same service as the xuid form. The app uses the xuid form because it already has the id.
+- id: notify-create
+  area: messaging
+  method: POST
+  host: notify.xboxlive.com
+  path: /system/notifications/endpoints
+  auth: xbl3.0
+  contract: '1'
+  class: write
+  status: 200
+  doc: docs/messaging.md
+  summary: Registers a push endpoint for notifications.
+  notes: 'Body: systemId, endpointUri, platform=windowsOneCore, platformVersion, deviceName, locale, titleId and filters[].
+    Returns endpointId. The endpointUri is a WNS channel and should not be published.'
+  test_account: true
+- id: notify-delete
+  area: messaging
+  method: DELETE
+  host: notify.xboxlive.com
+  path: /system/notifications/endpoints/{endpoint_id}
+  auth: xbl3.0
+  contract: '1'
+  class: write
+  status: 202
+  doc: docs/messaging.md
+  summary: Removes a registered push endpoint.
+  notes: Returns 202 with an empty body. The app calls it on sign-out and when it rotates the WNS channel.
+  test_account: true
+- id: chat-connect
+  area: messaging
+  method: GET
+  host: chat.xboxlive.com
+  path: /chat/connect
+  auth: xbl3.0
+  class: websocket
+  status: 101
+  doc: docs/messaging.md
+  summary: WebSocket for Xbox chat.
+  notes: The HTTP upgrade returns 101. The socket carries chat messages and presence events - the body is not HTTP and is not
+    documented here.
+- id: chat-auth
+  area: messaging
+  method: GET
+  host: chat.xboxlive.com
+  path: /users/xuid({xuid})/chat/auth
+  auth: xbl3.0
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/messaging.md
+  summary: Short-lived key for the chat socket.
+  notes: Returns AuthKey, a GUID. Treat it as a credential and do not publish captured values. The app requests it immediately
+    before opening chat/connect.
+- id: rta-connect
+  area: messaging
+  method: GET
+  host: rta.xboxlive.com
+  path: /connect
+  auth: xbl3.0
+  class: websocket
+  status: 101
+  doc: docs/messaging.md
+  summary: Real-time activity WebSocket.
+  notes: The handshake returns 101. The app uses it for presence and rich-presence updates while a game is running.
+- id: rta-nonce
+  area: messaging
+  method: GET
+  host: rta.xboxlive.com
+  path: /nonce
+  auth: xbl3.0
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/messaging.md
+  summary: Nonce used when opening the RTA socket.
+  notes: Returns a nonce. The app calls it before rta/connect. A tokenless request returns 401.
+- id: gameclips
+  area: media
+  method: GET
+  host: gameclipsmetadata.xboxlive.com
+  path: /users/xuid({xuid})/clips
+  auth: xbl3.0
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/media.md
+  summary: Game DVR clips for an account.
+  notes: Returns 401 without a token. The app shows captures on the game page and in the profile. Query parameters and response
+    fields are not captured here.
+- id: gameclips-me
+  area: media
+  method: GET
+  host: gameclipsmetadata.xboxlive.com
+  path: /users/me/clips
+  auth: xbl3.0
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/media.md
+  summary: Game DVR clips for the signed-in account.
+  notes: Returns 401 without a token. Kept as the me-form of the same service.
+- id: screenshots
+  area: media
+  method: GET
+  host: screenshotsmetadata.xboxlive.com
+  path: /users/xuid({xuid})/screenshots
+  auth: xbl3.0
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/media.md
+  summary: Screenshots for an account.
+  notes: Returns 401 without a token. The service is separate from gameclipsmetadata, so a client needs both hosts for a complete
+    captures tab.
+- id: screenshots-me
+  area: media
+  method: GET
+  host: screenshotsmetadata.xboxlive.com
+  path: /users/me/screenshots
+  auth: xbl3.0
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/media.md
+  summary: Screenshots for the signed-in account.
+  notes: Returns 401 without a token. Same service as the xuid form.
+- id: xccs-devices
+  area: cloud-gaming
+  method: GET
+  host: xccs.xboxlive.com
+  path: /lists/devices
+  auth: xbl3.0
+  contract: '4'
+  class: read
+  status: 200
+  probe_status: 401
+  doc: docs/cloud-gaming.md
+  summary: Consoles and devices linked to the account.
+  notes: Returns result[], agentUserId and status. The app uses it for the Consoles panel and remote-play entry points. Empty
+    result is normal when no console is linked.
+- id: xhome-login
+  area: cloud-gaming
+  method: POST
+  host: xhome.gssv-play-prod.xboxlive.com
+  path: /v2/login/user
+  auth: none
+  class: auth
+  status: 200
+  doc: docs/cloud-gaming.md
+  summary: Cloud-gaming login for console streaming.
+  notes: 'Body: {"offeringId":"xhome","token":"..."}. Returns gsToken, market, tokenType and offeringSettings with region
+    base URIs. The token is a credential and is redacted in the capture.'
+- id: xgpupcapp-login
+  area: cloud-gaming
+  method: POST
+  host: xgpupcapp.gssv-play-prod.xboxlive.com
+  path: /v2/login/user
+  auth: none
+  class: auth
+  status: 403
+  doc: docs/cloud-gaming.md
+  summary: Cloud-gaming login for the PC Game Pass app.
+  notes: 'Body: {"offeringId":"XGPUPCAPP","token":"..."}. The captured account received 403 InvalidCountry in Austria. The
+    route is live - the offering is region-gated.'
+- id: uks-login
+  area: cloud-gaming
+  method: POST
+  host: uks.core.gssv-play-prodxhome.xboxlive.com
+  path: /v2/login/user
+  auth: none
+  class: auth
+  status: 200
+  doc: docs/cloud-gaming.md
+  summary: Regional cloud-gaming login endpoint.
+  notes: The xhome login returns this base URI for the UK South region. Body and response match xhome. A client should use
+    the baseUri from offeringSettings rather than hard-coding the region.
+- id: onecollector-v10
+  area: telemetry
+  method: POST
+  host: v10.events.data.microsoft.com
+  path: /OneCollector/1.0/
+  auth: events-token
+  class: write
+  status: 415
+  doc: docs/telemetry.md
+  summary: Microsoft OneCollector event ingestion.
+  notes: 'Body is application/x-json-stream. Headers: authxtoken and tickets. The events token already has the x: prefix.
+    Used by event-based achievement unlocks.'
+  test_account: true
+- id: onecollector-mobile
+  area: telemetry
+  method: POST
+  host: mobile.events.data.microsoft.com
+  path: /OneCollector/1.0/
+  auth: events-token
+  class: write
+  status: 415
+  doc: docs/telemetry.md
+  summary: OneCollector endpoint referenced by the app's telemetry DLL.
+  notes: No request was captured. The string is in ClientTelemetry.dll. A tokenless POST returns 415 because the body is missing.
+    Treat it as a lead, not a documented flow.
+  test_account: true
+- id: arc-impression
+  area: telemetry
+  method: POST
+  host: arc.msn.com
+  path: /v3/Delivery/Events/Impression
+  auth: none
+  class: write
+  status: 200
+  doc: docs/telemetry.md
+  summary: Store merchandising impression tracking.
+  notes: The app posts impression events for promoted tiles. No Xbox token. This is advertising telemetry, not account data.
+- id: substrate-profile
+  area: telemetry
+  method: GET
+  host: substrate.office.com
+  path: /profileb2/v2.0/me/V1Profile
+  auth: microsoft-account
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/telemetry.md
+  summary: Microsoft account profile used for the app's avatar.
+  notes: Returns 401 without a Microsoft account token. This is the Office substrate profile service, not an Xbox Live host.
+    The app calls it next to the Xbox profile.
+- id: substrate-image
+  area: telemetry
+  method: GET
+  host: substrate.office.com
+  path: /imageB2/v1.0/me/image/$value
+  auth: microsoft-account
+  class: read
+  status: 401
+  probe_status: 401
+  doc: docs/telemetry.md
+  summary: Microsoft account profile image.
+  notes: Returns 401 without a token. Same service as substrate-profile. The app falls back to the Xbox gamerpic when this
+    fails.
