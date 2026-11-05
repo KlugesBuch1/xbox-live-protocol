@@ -1,0 +1,34 @@
+{
+  "offeringSettings": {
+    "allowRegionSelection": false,
+    "regions": [
+      {
+        "name": "WestUS2",
+        "baseUri": "https://wus2.core.gssv-play-prodxhome.xboxlive.com",
+        "networkTestHostname": null,
+        "isDefault": false,
+        "systemUpdateGroups": null,
+        "fallbackPriority": -1
+      },
+      {
+        "name": "UkSouth",
+        "baseUri": "https://uks.core.gssv-play-prodxhome.xboxlive.com",
+        "networkTestHostname": null,
+        "isDefault": true,
+        "systemUpdateGroups": null,
+        "fallbackPriority": -1
+      }
+    ],
+    "selectableServerTypes": null,
+    "clientCloudSettings": {
+      "Environments": [
+        { "Name": "Int", "AuthBaseUri": "https://gssv-auth-intxhome.xboxlive.com" },
+        { "Name": "Prod", "AuthBaseUri": null },
+        { "Name": "Test", "AuthBaseUri": "https://gssv-auth-testxhome.xboxlive.com" }
+      ]
+    }
+  },
+  "market": "AT",
+  "tokenType": "bearer",
+  "durationInSeconds": 14400
+}

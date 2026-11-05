@@ -1,0 +1,27 @@
+{
+  "groups": [],
+  "statlistscollection": [
+    {
+      "arrangebyfield": "xuid",
+      "arrangebyfieldid": "{xuid}",
+      "stats": [
+        {
+          "xuid": "{xuid}",
+          "scid": "a5ee0100-7093-4a78-b098-471729f95ee9",
+          "titleid": "704208617",
+          "name": "TotalKills",
+          "type": "Integer",
+          "value": "120"
+        },
+        {
+          "xuid": "{xuid}",
+          "scid": "a5ee0100-7093-4a78-b098-471729f95ee9",
+          "titleid": "704208617",
+          "name": "KillDeathRatio",
+          "type": "Double",
+          "value": "1.75"
+        }
+      ]
+    }
+  ]
+}

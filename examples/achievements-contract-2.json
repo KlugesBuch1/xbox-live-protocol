@@ -1,0 +1,41 @@
+{
+  "xuid": "{xuid}",
+  "titleId": "704208617",
+  "name": "Contoso Quest",
+  "achievements": [
+    {
+      "id": "1",
+      "name": "First Steps",
+      "description": "Finish the tutorial.",
+      "lockedDescription": "Finish the tutorial.",
+      "progressState": "Achieved",
+      "progression": {
+        "timeUnlocked": "2026-11-04T20:00:00.0000000Z"
+      },
+      "mediaAssets": [],
+      "rewards": [
+        { "name": "Gamerscore", "value": "10", "type": "Gamerscore" }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Halfway There",
+      "description": "Complete half of the main story.",
+      "lockedDescription": "Complete half of the main story.",
+      "progressState": "InProgress",
+      "progression": {
+        "requirements": [
+          { "id": "00000000-0000-0000-0000-000000000000", "current": "4", "target": "10" }
+        ]
+      },
+      "mediaAssets": [],
+      "rewards": [
+        { "name": "Gamerscore", "value": "25", "type": "Gamerscore" }
+      ]
+    }
+  ],
+  "pagingInfo": {
+    "continuationToken": null,
+    "totalRecords": 2
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "people": [
+    {
+      "xuid": "{xuid}",
+      "gamertag": "Contoso",
+      "displayPicRaw": "https://images-eds-ssl.xboxlive.com/image?url=example",
+      "gamerScore": "12345",
+      "presenceState": "Online",
+      "presenceText": "Online",
+      "detail": {
+        "canBeFriended": true,
+        "canBeFollowed": true,
+        "isFriend": true,
+        "friendCount": 72,
+        "isFollowingCaller": true,
+        "isFollowedByCaller": true,
+        "isFavorite": false,
+        "followerCount": 5,
+        "followingCount": 17,
+        "hasGamePass": true
+      },
+      "presenceDetails": [
+        {
+          "IsBroadcasting": false,
+          "Device": "WindowsOneCore",
+          "PresenceText": "Playing Contoso Quest",
+          "State": "Online",
+          "TitleId": "704208617",
+          "IsPrimary": true,
+          "IsGame": true
+        }
+      ],
+      "preferredColor": {
+        "primaryColor": "107c10",
+        "secondaryColor": "102b14",
+        "tertiaryColor": "155715"
+      }
+    }
+  ],
+  "recommendationSummary": null,
+  "friendFinderState": null,
+  "accountLinkDetails": null,
+  "friendRequestSummary": {
+    "friendRequestsReceivedCount": 0
+  }
+}

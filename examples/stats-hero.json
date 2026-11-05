@@ -1,0 +1,33 @@
+{
+  "groups": [
+    {
+      "name": "Hero",
+      "titleid": "704208617",
+      "statlistscollection": [
+        {
+          "arrangebyfield": "xuid",
+          "arrangebyfieldid": "{xuid}",
+          "stats": [
+            {
+              "xuid": "{xuid}",
+              "scid": "a5ee0100-7093-4a78-b098-471729f95ee9",
+              "titleid": "704208617",
+              "name": "MinutesPlayed",
+              "type": "Integer",
+              "value": 1234
+            },
+            {
+              "xuid": "{xuid}",
+              "scid": "a5ee0100-7093-4a78-b098-471729f95ee9",
+              "titleid": "704208617",
+              "name": "HighestCombo",
+              "type": "Integer",
+              "value": 42
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "statlistscollection": []
+}

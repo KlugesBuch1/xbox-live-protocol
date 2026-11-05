@@ -1,0 +1,38 @@
+{
+  "Product": {
+    "ProductId": "9MV0B5HZVK9Z",
+    "ProductType": "Game",
+    "LocalizedProperties": [
+      {
+        "ProductTitle": "Contoso Quest",
+        "PublisherName": "Contoso Games",
+        "ShortDescription": "A sample product used in the protocol examples.",
+        "ReleaseDate": "2026-09-15T00:00:00Z",
+        "Images": [
+          {
+            "Url": "https://store-images.s-microsoft.com/image/example-boxart.png",
+            "ImagePurpose": "BoxArt"
+          },
+          {
+            "Url": "https://store-images.s-microsoft.com/image/example-poster.png",
+            "ImagePurpose": "Poster"
+          }
+        ]
+      }
+    ],
+    "Properties": {
+      "Categories": ["Games"],
+      "Keywords": ["action", "adventure"]
+    },
+    "DisplaySkuAvailabilities": [
+      {
+        "Sku": {
+          "SkuId": "0010",
+          "Properties": {
+            "Packaging": "MSIXVC"
+          }
+        }
+      }
+    ]
+  }
+}

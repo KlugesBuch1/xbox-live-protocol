@@ -1,0 +1,40 @@
+{
+  "xuid": "{xuid}",
+  "titles": [
+    {
+      "titleId": "704208617",
+      "name": "Contoso Quest",
+      "type": "Game",
+      "devices": ["PC"],
+      "displayImage": "https://store-images.s-microsoft.com/image/example",
+      "achievement": {
+        "currentAchievements": 25,
+        "totalAchievements": 80,
+        "currentGamerscore": 400,
+        "totalGamerscore": 1000,
+        "progressPercentage": 31.25,
+        "sourceVersion": 2
+      },
+      "titleHistory": {
+        "lastTimePlayed": "2026-11-04T20:00:00.0000000Z"
+      }
+    },
+    {
+      "titleId": "1234567890",
+      "name": "Fabrikam Racing",
+      "type": "Game",
+      "devices": ["PC", "XboxOne"],
+      "achievement": {
+        "currentAchievements": 10,
+        "totalAchievements": 40,
+        "currentGamerscore": 150,
+        "totalGamerscore": 1000,
+        "progressPercentage": 25.0,
+        "sourceVersion": 2
+      },
+      "titleHistory": {
+        "lastTimePlayed": "2026-10-28T18:30:00.0000000Z"
+      }
+    }
+  ]
+}
