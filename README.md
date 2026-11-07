@@ -1,5 +1,7 @@
 # Xbox Live protocol
 
+[![CI](https://github.com/KlugesBuch1/xbox-live-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/KlugesBuch1/xbox-live-protocol/actions/workflows/ci.yml)
+
 A catalogue of the HTTP API used by the Xbox App on Windows. It covers sign-in, profiles, the games library, achievements, stats, presence, friends, messages, captures, the store catalogue and cloud gaming.
 
 It is an unofficial protocol and does not cover the entire Xbox Live surface.
@@ -26,6 +28,10 @@ It is an unofficial protocol and does not cover the entire Xbox Live surface.
 | [`docs/endpoint-index.md`](docs/endpoint-index.md) | The same 76 routes as a table |
 | [`tools/probe.py`](tools/probe.py) | Sends a tokenless request to the read routes and prints the status |
 | [`examples/`](examples) | Trimmed response bodies with fake ids |
+
+## Rust client
+
+[`crates/xbl`](crates/xbl) is the reference Rust client for these endpoints. (WIP)
 
 ## The index
 
