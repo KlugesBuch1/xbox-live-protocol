@@ -160,7 +160,8 @@ mod tests {
     use p256::ecdsa::signature::Verifier;
 
     #[test]
-    fn payload_matches_the_python_reference_self_test() {
+    // Timestamp 1, POST /path, body {}: the offsets from docs/signing.md.
+    fn payload_matches_the_documented_layout() {
         let payload = PayloadBuilder::new(FileTime::from_ticks(1), "POST", "/path", b"{}").build();
 
         let expected =
