@@ -1,6 +1,7 @@
 # Xbox Live protocol
 
 [![CI](https://github.com/KlugesBuch1/xbox-live-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/KlugesBuch1/xbox-live-protocol/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/xbl.svg)](https://crates.io/crates/xbl)
 
 A catalogue of the HTTP API used by the Xbox App on Windows. It covers sign-in, profiles, the games library, achievements, stats, presence, friends, messages, captures, the store catalogue and cloud gaming.
 
