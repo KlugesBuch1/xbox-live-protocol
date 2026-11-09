@@ -2,8 +2,9 @@
 //!
 //! Two requests are signed: `POST device.auth.xboxlive.com/device/authenticate`
 //! and `POST sisu.xboxlive.com/authorize`. The signature covers the method, the
-//! path with its query, and the raw body bytes. The byte layout is documented
-//! in `docs/signing.md`.
+//! path with its query, and the raw body bytes. The byte layout and the
+//! measured failures are documented in the repository:
+//! <https://github.com/KlugesBuch1/xbox-live-protocol/blob/main/docs/signing.md>
 //!
 //! The signed payload and the `Signature` header use different layouts: the
 //! payload has separator bytes between its fields, the header does not.
@@ -172,8 +173,8 @@ mod tests {
     use base64::{Engine as _, engine::general_purpose::STANDARD};
     use p256::ecdsa::signature::Verifier;
 
+    // Timestamp 1, POST /path, body {}: the offsets from the repository notes.
     #[test]
-    // Timestamp 1, POST /path, body {}: the offsets from docs/signing.md.
     fn payload_matches_the_documented_layout() {
         let payload = PayloadBuilder::new(FileTime::from_ticks(1), "POST", "/path", b"{}").build();
 

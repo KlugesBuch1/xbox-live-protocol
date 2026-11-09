@@ -2,6 +2,13 @@
 name = "xbl"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+description = "Xbox Live authentication and proof-of-possession signing"
+repository = "https://github.com/KlugesBuch1/xbox-live-protocol"
+readme = "README.md"
+rust-version = "1.98"
+keywords = ["xbox", "xbox-live"]
+categories = ["authentication"]
 
 [dependencies]
 base64 = "0.23.1"
