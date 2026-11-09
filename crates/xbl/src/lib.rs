@@ -4,4 +4,5 @@
 #![deny(missing_docs)]
 #![forbid(unsafe_code)]
 
+pub mod auth;
 pub mod signing;

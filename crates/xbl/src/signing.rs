@@ -47,6 +47,19 @@ impl FileTime {
         Self((seconds + WINDOWS_EPOCH_OFFSET_SECONDS) * TICKS_PER_SECOND)
     }
 
+    /// Returns the current UTC time with one-second precision.
+    ///
+    /// The server does not compare this value with its own clock. A timestamp
+    /// that is a little off is accepted as long as the same bytes are signed
+    /// and sent.
+    #[must_use]
+    pub fn now() -> Self {
+        let seconds = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |elapsed| elapsed.as_secs());
+        Self::from_unix_seconds(seconds)
+    }
+
     /// Returns the raw FILETIME ticks.
     pub const fn ticks(self) -> u64 {
         self.0
@@ -200,6 +213,21 @@ mod tests {
         assert!(!header.contains('_'), "base64url alphabet");
         assert!(header.ends_with("=="), "padding is kept");
         assert_eq!(header.len(), 104);
+    }
+
+    #[test]
+    fn filetime_now_tracks_the_system_clock() {
+        let now = FileTime::now();
+
+        assert!(
+            now.ticks() > FileTime::from_unix_seconds(1_600_000_000).ticks(),
+            "the test clock is after 2020"
+        );
+        assert!(
+            now.ticks() < FileTime::from_unix_seconds(4_102_444_800).ticks(),
+            "the test clock is before 2100"
+        );
+        assert_eq!(now.ticks() % 10_000_000, 0, "one-second precision");
     }
 
     #[test]
