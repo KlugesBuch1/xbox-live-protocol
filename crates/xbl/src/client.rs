@@ -4,6 +4,8 @@
 //! header on every request. The base URL can be replaced so the tests run
 //! against a local server.
 
+use std::time::Duration;
+
 use reqwest::header::{ACCEPT, AUTHORIZATION};
 use serde::de::DeserializeOwned;
 
@@ -12,6 +14,9 @@ use crate::error::Error;
 
 /// The host that serves the profile routes.
 const DEFAULT_BASE_URL: &str = "https://profile.xboxlive.com";
+
+/// How long one request may take before it is aborted.
+const TIMEOUT: Duration = Duration::from_secs(30);
 
 /// A client that sends Xbox Live requests with one account's token.
 #[derive(Clone, Debug)]
@@ -29,10 +34,16 @@ impl Client {
     }
 
     /// Creates a client for another host, for example a test server.
+    ///
+    /// Requests time out after 30 seconds.
     #[must_use]
     pub fn with_base_url(token: XboxToken, base_url: impl Into<String>) -> Self {
+        let http = reqwest::Client::builder()
+            .timeout(TIMEOUT)
+            .build()
+            .expect("the HTTP client configuration is valid");
         Self {
-            http: reqwest::Client::new(),
+            http,
             token,
             base_url: base_url.into().trim_end_matches('/').to_owned(),
         }

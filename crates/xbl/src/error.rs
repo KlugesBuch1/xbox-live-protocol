@@ -9,6 +9,7 @@ use crate::auth::AuthError;
 /// The `Debug` output redacts response bodies. Match on the variant if you need
 /// the body of an [`Error::Api`] error.
 #[derive(thiserror::Error)]
+#[non_exhaustive]
 pub enum Error {
     /// The auth chain failed before a request was sent.
     #[error(transparent)]
