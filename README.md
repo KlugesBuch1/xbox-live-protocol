@@ -32,7 +32,10 @@ It is an unofficial protocol and does not cover the entire Xbox Live surface.
 
 ## Rust client
 
-[`crates/xbl`](crates/xbl) is the reference Rust client for these endpoints. (WIP)
+[`crates/xbl`](crates/xbl) is the reference Rust client for these endpoints. It
+covers the auth chain, proof-of-possession signing and the profile settings
+route; more endpoints follow. Published on crates.io as
+[`xbl`](https://crates.io/crates/xbl).
 
 ## The index
 

@@ -1,9 +1,9 @@
 [package]
 name = "xbl"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 license = "MIT"
-description = "Xbox Live authentication and proof-of-possession signing"
+description = "Xbox Live authentication, proof-of-possession signing and profile requests"
 repository = "https://github.com/KlugesBuch1/xbox-live-protocol"
 readme = "README.md"
 rust-version = "1.98"
