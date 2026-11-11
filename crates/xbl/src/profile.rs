@@ -1,7 +1,8 @@
-//! The profile settings route.
+//! The gamercard route.
 //!
-//! `GET profile.xboxlive.com/users/me/profile/settings` returns the settings
-//! that make up a gamercard. The response is always a `profileUsers` array.
+//! `GET profile.xboxlive.com/users/me/profile/settings` returns the fields that
+//! make up a gamercard: gamertag, gamerscore, avatar URL, bio, location, account
+//! tier and reputation. The response is always a `profileUsers` array.
 
 use serde::Deserialize;
 
@@ -77,11 +78,12 @@ impl Profile {
 }
 
 impl Client {
-    /// Fetches the profile settings of the signed-in account.
+    /// Fetches the gamercard of the signed-in account.
     ///
-    /// Sends contract 2 and asks for the eight settings that the Xbox app uses.
-    /// Returns [`Error::EmptyProfileUsers`] when the service answers 200 with an
-    /// empty `profileUsers` list.
+    /// The result carries the gamertag, gamerscore, avatar URL, bio, location,
+    /// account tier and reputation. Sends contract 2 and asks for the eight
+    /// settings that the Xbox app uses. Returns [`Error::EmptyProfileUsers`]
+    /// when the service answers 200 with an empty `profileUsers` list.
     pub async fn profile(&self) -> Result<Profile, Error> {
         let path = format!("/users/me/profile/settings?settings={SETTINGS}");
         let response: ProfileResponse = self.get_json(&path, CONTRACT).await?;

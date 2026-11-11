@@ -1,12 +1,13 @@
 # xbl
 
-Xbox Live authentication, proof-of-possession signing and profile requests for
+Xbox Live authentication, proof-of-possession signing and profile data for
 Rust.
 
 The crate implements the device-code sign-in chain used by the Xbox app, the two
 signed requests behind it (`device/authenticate` and `sisu/authorize`), and the
-profile settings route. Sign-in returns an `XBL3.0` authorization header that
-the `Client` sends on every request. More Live endpoints follow.
+signed-in gamercard: gamertag, gamerscore, avatar URL, bio, location, account
+tier and reputation. Sign-in returns an `XBL3.0` authorization header that the
+`Client` sends on every request. More Live endpoints follow.
 
 Unofficial. Not affiliated with Microsoft.
 
@@ -39,7 +40,7 @@ async fn main() -> Result<(), xbl::auth::AuthError> {
 }
 ```
 
-## Fetch the profile
+## Read the profile
 
 ```rust,no_run
 use xbl::auth::XboxToken;
@@ -56,7 +57,8 @@ async fn gamertag(token: XboxToken) -> Result<String, xbl::Error> {
 - Device-code flow (`oauth20_connect.srf`, `oauth20_token.srf`).
 - P-256 proof-of-possession signing with the 76-byte header block.
 - Refresh-token exchange.
-- Profile settings (`users/me/profile/settings`) with a typed model.
+- The signed-in gamercard (`users/me/profile/settings`): gamertag, gamerscore,
+  avatar URL, bio, location, account tier and reputation.
 - No token storage.
 
 ## Documentation
