@@ -132,8 +132,17 @@ pub struct XboxToken {
 }
 
 impl XboxToken {
-    pub(crate) fn new(token: String, uhs: String) -> Self {
-        Self { token, uhs }
+    /// Builds a token from a token string and its user hash.
+    ///
+    /// [`Auth::authenticate`] returns a token directly. Use this constructor to
+    /// restore one that the caller stored, for example after a restart.
+    ///
+    /// [`Auth::authenticate`]: crate::auth::Auth::authenticate
+    pub fn new(token: impl Into<String>, uhs: impl Into<String>) -> Self {
+        Self {
+            token: token.into(),
+            uhs: uhs.into(),
+        }
     }
 
     /// The user hash that belongs to the Xbox Live token.

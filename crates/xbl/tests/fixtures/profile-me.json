@@ -1,0 +1,19 @@
+{
+  "profileUsers": [
+    {
+      "id": "{xuid}",
+      "hostId": "{xuid}",
+      "settings": [
+        { "id": "Gamertag", "value": "Contoso" },
+        { "id": "ModernGamertag", "value": "Contoso" },
+        { "id": "Gamerscore", "value": "12345" },
+        { "id": "GameDisplayPicRaw", "value": "https://images-eds-ssl.xboxlive.com/image?url=example" },
+        { "id": "AccountTier", "value": "Gold" },
+        { "id": "Bio", "value": "Playing on PC." },
+        { "id": "Location", "value": "Austria" },
+        { "id": "XboxOneRep", "value": "GoodPlayer" }
+      ],
+      "isSponsoredUser": false
+    }
+  ]
+}
